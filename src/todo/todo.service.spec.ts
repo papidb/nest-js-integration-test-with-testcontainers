@@ -1,9 +1,8 @@
-import { MikroOrmModule, MikroOrmModuleOptions } from '@mikro-orm/nestjs';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { EntityManager, MikroORM } from '@mikro-orm/postgresql';
 import { Test, TestingModule } from '@nestjs/testing';
-import { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { randomUUID } from 'crypto';
-import { setupTestDatabase } from '../../test/utils';
+import { SingletonTestContainers } from '../../test/utils';
 import { Todo } from './todo.entity';
 import { TodoRepository } from './todo.repository';
 import { TodoService } from './todo.service';
@@ -11,20 +10,17 @@ import { TodoService } from './todo.service';
 describe('TodoService', () => {
   let service: TodoService;
   let orm: MikroORM;
-  let config: MikroOrmModuleOptions;
   let em: EntityManager;
-  let postgresContainer: StartedPostgreSqlContainer;
+  const testContainers = SingletonTestContainers.getInstance();
 
   beforeAll(async () => {
-    const setup = await setupTestDatabase();
-    config = setup.config;
-    postgresContainer = setup.postgresContainer;
+    await testContainers.init();
   });
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
-        MikroOrmModule.forRoot(config),
+        MikroOrmModule.forRoot(testContainers.config),
         MikroOrmModule.forFeature({
           entities: [Todo],
         }),
@@ -44,7 +40,7 @@ describe('TodoService', () => {
 
   afterAll(async () => {
     await orm.close(true);
-    await postgresContainer.stop({ remove: true, removeVolumes: true });
+    await testContainers.shutdown();
   });
 
   it('should create a new todo', async () => {

@@ -1,19 +1,20 @@
 import { MikroOrmModule, MikroOrmModuleOptions } from '@mikro-orm/nestjs';
 import { Test, TestingModule } from '@nestjs/testing';
-import { setupTestDatabase } from '../../test/utils';
+import { SingletonTestContainers } from '../../test/utils';
 import { TodoController } from './todo.controller';
 import { Todo } from './todo.entity';
 import { TodoRepository } from './todo.repository';
 import { TodoService } from './todo.service';
+import { MikroORM } from '@mikro-orm/postgresql';
 
 describe('TodoController', () => {
   let controller: TodoController;
-
+  let orm: MikroORM;
   let config: MikroOrmModuleOptions;
+  const testContainers = SingletonTestContainers.getInstance();
 
   beforeAll(async () => {
-    const setup = await setupTestDatabase();
-    config = setup.config;
+    await testContainers.init();
   });
 
   beforeEach(async () => {
@@ -29,6 +30,12 @@ describe('TodoController', () => {
     }).compile();
 
     controller = module.get<TodoController>(TodoController);
+    orm = module.get<MikroORM>(MikroORM);
+  });
+
+  afterAll(async () => {
+    await orm.close(true);
+    await testContainers.shutdown();
   });
 
   it('should be defined', () => {
