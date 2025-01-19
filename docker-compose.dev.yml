@@ -1,0 +1,18 @@
+version: '3.8'
+
+name: nest-js-integration-test-with-testcontainers_dev
+
+services:
+  postgres_dev:
+    image: postgres:15
+    ports:
+      - '${DB_PORT}:${DB_PORT}'
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_dev_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_dev_data:
