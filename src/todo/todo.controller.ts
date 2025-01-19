@@ -7,6 +7,7 @@ import {
   Post,
   Put,
 } from '@nestjs/common';
+import { randomUUID } from 'crypto';
 import { Todo } from './todo.entity';
 import { TodoService } from './todo.service';
 
@@ -26,7 +27,8 @@ export class TodoController {
 
   @Post()
   create(@Body('title') title: string): Promise<Todo> {
-    return this.todoService.create(title);
+    const id = randomUUID();
+    return this.todoService.create(id, title);
   }
 
   @Put(':id')

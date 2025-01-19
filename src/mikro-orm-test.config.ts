@@ -17,5 +17,6 @@ export default async (url: string) => {
     registerRequestContext: false,
     extensions: [Migrator, EntityGenerator, SeedManager],
     logger: () => {},
+    allowGlobalContext: true,
   });
 };
