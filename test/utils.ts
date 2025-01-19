@@ -17,12 +17,9 @@ export class SingletonTestContainers {
 
   private constructor() {}
 
-  /**
-   * Initializes the singleton, starting the PostgreSQL container and ORM setup.
-   */
   public async init(): Promise<void> {
     if (this.initialized) {
-      return; // Prevent multiple initializations
+      return;
     }
 
     const dbPort = Number(process.env.DB_PORT);
@@ -43,9 +40,6 @@ export class SingletonTestContainers {
     this.initialized = true;
   }
 
-  /**
-   * Cleans up resources like the PostgreSQL container.
-   */
   public async shutdown(): Promise<void> {
     if (this.postgresContainer) {
       await this.postgresContainer.stop({ remove: true, removeVolumes: true });
@@ -54,9 +48,6 @@ export class SingletonTestContainers {
     this.initialized = false;
   }
 
-  /**
-   * Returns the singleton instance, creating it if necessary.
-   */
   public static getInstance(): SingletonTestContainers {
     if (!SingletonTestContainers.instance) {
       SingletonTestContainers.instance = new SingletonTestContainers();
