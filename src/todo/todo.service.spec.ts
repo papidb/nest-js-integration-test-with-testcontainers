@@ -3,7 +3,7 @@ import { EntityManager, MikroORM } from '@mikro-orm/postgresql';
 import { Test, TestingModule } from '@nestjs/testing';
 import { StartedPostgreSqlContainer } from '@testcontainers/postgresql';
 import { randomUUID } from 'crypto';
-import { mikroOrmModule, setupTestDatabase } from '../../test/utils';
+import { setupTestDatabase } from '../../test/utils';
 import { Todo } from './todo.entity';
 import { TodoRepository } from './todo.repository';
 import { TodoService } from './todo.service';
@@ -23,7 +23,12 @@ describe('TodoService', () => {
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      imports: [MikroOrmModule.forRoot(config), mikroOrmModule],
+      imports: [
+        MikroOrmModule.forRoot(config),
+        MikroOrmModule.forFeature({
+          entities: [Todo],
+        }),
+      ],
       providers: [TodoService, TodoRepository],
     }).compile();
 
@@ -87,7 +92,6 @@ describe('TodoService', () => {
     );
 
     const savedTodo = await em.findOneOrFail(Todo, { id: todo.id });
-
     expect(savedTodo.completed).toBe(true);
   });
 

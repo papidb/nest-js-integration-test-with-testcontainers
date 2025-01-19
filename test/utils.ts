@@ -1,6 +1,4 @@
-// all the modules you need for test
-
-import { MikroOrmModule, MikroOrmModuleOptions } from '@mikro-orm/nestjs';
+import { MikroOrmModuleOptions } from '@mikro-orm/nestjs';
 import { MikroORM } from '@mikro-orm/postgresql';
 import {
   PostgreSqlContainer,
@@ -9,12 +7,7 @@ import {
 import mikroOrmTestConfig from '../src/mikro-orm-test.config';
 
 import * as dotenv from 'dotenv';
-import { Todo } from '../src/todo/todo.entity';
 dotenv.config();
-
-export const mikroOrmModule = MikroOrmModule.forFeature({
-  entities: [Todo],
-});
 
 let postgresContainer: StartedPostgreSqlContainer;
 let config: MikroOrmModuleOptions;
