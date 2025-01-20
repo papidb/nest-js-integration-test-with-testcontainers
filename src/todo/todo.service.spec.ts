@@ -1,8 +1,12 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { EntityManager, MikroORM } from '@mikro-orm/postgresql';
+import { CacheModule } from '@nestjs/cache-manager';
+import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
 import { SingletonTestContainers } from '../../test/utils';
+import { AppService } from '../app.service';
+import config from '../common/configs/config';
 import { Todo } from './todo.entity';
 import { TodoRepository } from './todo.repository';
 import { TodoService } from './todo.service';
@@ -20,10 +24,12 @@ describe('TodoService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       imports: [
+        ConfigModule.forRoot({ isGlobal: true, load: [config] }),
         MikroOrmModule.forRoot(testContainers.config),
         MikroOrmModule.forFeature({
           entities: [Todo],
         }),
+        CacheModule.registerAsync(AppService.RedisOptions),
       ],
       providers: [TodoService, TodoRepository],
     }).compile();

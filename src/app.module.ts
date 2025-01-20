@@ -1,5 +1,6 @@
 import { MikroOrmMiddleware, MikroOrmModule } from '@mikro-orm/nestjs';
 import { MikroORM } from '@mikro-orm/postgresql';
+import { CacheModule } from '@nestjs/cache-manager';
 import {
   MiddlewareConsumer,
   Module,
@@ -17,6 +18,7 @@ import { TodoModule } from './todo/todo.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true, load: [config] }),
     MikroOrmModule.forRoot(mikroOrmConfig),
+    CacheModule.registerAsync(AppService.RedisOptions),
     TodoModule,
   ],
   controllers: [AppController],

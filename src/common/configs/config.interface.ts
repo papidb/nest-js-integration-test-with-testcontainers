@@ -3,6 +3,7 @@ export interface Config {
   database: DatabaseConfig;
   environment: 'development' | 'production' | 'test';
   app_name: string;
+  cache: CacheConfig;
 }
 
 export interface NestConfig {
@@ -21,5 +22,5 @@ export interface DatabaseConfig {
 }
 
 export interface CacheConfig {
-  url: string;
+  redisUrl: string;
 }

@@ -18,7 +18,10 @@ const config: Config = {
     ssl: process.env.DB_SSL === 'true',
   },
   environment: process.env.NODE_ENV as Config['environment'],
-  app_name: 'gamification',
+  app_name: 'nest-js-integration-test-with-testcontainers',
+  cache: {
+    redisUrl: `redis://@${process.env.REDIS_HOST}:${process.env.REDIS_PORT}`,
+  },
 };
 
 const envSchema = z.object({
@@ -35,6 +38,8 @@ const envSchema = z.object({
     required_error:
       "NODE_ENV is required and must be 'development', 'production', or 'test'",
   }),
+  REDIS_HOST: z.string().nonempty('REDIS_HOST is required'),
+  REDIS_PORT: z.string().nonempty('REDIS_PORT is required'),
   ALLOWED_ORIGIN: z.string().nonempty('ALLOWED_ORIGIN is required'),
 });
 
