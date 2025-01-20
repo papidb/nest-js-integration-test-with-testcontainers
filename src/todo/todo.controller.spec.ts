@@ -1,4 +1,4 @@
-import { MikroOrmModule, MikroOrmModuleOptions } from '@mikro-orm/nestjs';
+import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { MikroORM } from '@mikro-orm/postgresql';
 import { CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule } from '@nestjs/config';
@@ -14,7 +14,6 @@ import { TodoService } from './todo.service';
 describe('TodoController', () => {
   let controller: TodoController;
   let orm: MikroORM;
-  let config: MikroOrmModuleOptions;
   const testContainers = SingletonTestContainers.getInstance();
 
   beforeAll(async () => {
@@ -22,14 +21,17 @@ describe('TodoController', () => {
   });
 
   beforeEach(async () => {
+    const redisOptions = AppService.RedisOptions;
+    redisOptions.useFactory = async () =>
+      AppService.buildRedisStore(testContainers.redisUrl);
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ isGlobal: true, load: [appConfig] }),
-        MikroOrmModule.forRoot(config),
+        MikroOrmModule.forRoot(testContainers.config),
         MikroOrmModule.forFeature({
           entities: [Todo],
         }),
-        CacheModule.registerAsync(AppService.RedisOptions),
+        CacheModule.registerAsync(redisOptions),
       ],
       providers: [TodoService, TodoRepository],
       controllers: [TodoController],

@@ -1,6 +1,6 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { EntityManager, MikroORM } from '@mikro-orm/postgresql';
-import { CacheModule } from '@nestjs/cache-manager';
+import { Cache, CacheModule } from '@nestjs/cache-manager';
 import { ConfigModule } from '@nestjs/config';
 import { Test, TestingModule } from '@nestjs/testing';
 import { randomUUID } from 'crypto';
@@ -15,13 +15,18 @@ describe('TodoService', () => {
   let service: TodoService;
   let orm: MikroORM;
   let em: EntityManager;
+  let cacheManager: Cache;
   const testContainers = SingletonTestContainers.getInstance();
 
   beforeAll(async () => {
+    jest.setTimeout(60000);
     await testContainers.init();
   });
 
   beforeEach(async () => {
+    const redisOptions = AppService.RedisOptions;
+    redisOptions.useFactory = async () =>
+      AppService.buildRedisStore(testContainers.redisUrl);
     const module: TestingModule = await Test.createTestingModule({
       imports: [
         ConfigModule.forRoot({ isGlobal: true, load: [config] }),
@@ -29,7 +34,7 @@ describe('TodoService', () => {
         MikroOrmModule.forFeature({
           entities: [Todo],
         }),
-        CacheModule.registerAsync(AppService.RedisOptions),
+        CacheModule.registerAsync(redisOptions),
       ],
       providers: [TodoService, TodoRepository],
     }).compile();
@@ -37,6 +42,7 @@ describe('TodoService', () => {
     service = module.get<TodoService>(TodoService);
     orm = module.get<MikroORM>(MikroORM);
     em = module.get<EntityManager>(EntityManager);
+    cacheManager = module.get<Cache>(Cache);
   });
 
   beforeEach(async () => {
@@ -62,6 +68,10 @@ describe('TodoService', () => {
     const todos = await em.find(Todo, {});
     expect(todos).toHaveLength(1);
     expect(todos[0].title).toBe('Test Todo');
+
+    // created todo should be in the cache
+    const todoFromCache = await cacheManager.get<Todo>(`todo:${todos[0].id}`);
+    expect(todoFromCache.id).toMatch(todos[0].id);
   });
 
   it('should retrieve all todos', async () => {

@@ -7,17 +7,20 @@ import { CacheConfig, Config } from './common/configs/config.interface';
 
 @Injectable()
 export class AppService {
+  static buildRedisStore(url: string) {
+    const store = redisStore({
+      url,
+    });
+    return {
+      store: () => store,
+    };
+  }
+
   static readonly RedisOptions: CacheModuleAsyncOptions = {
     isGlobal: true,
     imports: [ConfigModule],
-    useFactory: async (config: ConfigService<Config>) => {
-      const store = await redisStore({
-        url: config.get<CacheConfig>('cache').redisUrl,
-      });
-      return {
-        store: () => store,
-      };
-    },
+    useFactory: async (config: ConfigService<Config>) =>
+      AppService.buildRedisStore(config.get<CacheConfig>('cache').redisUrl),
     inject: [ConfigService],
   };
   getHello(): string {
